@@ -1,11 +1,15 @@
+import axios from 'axios';
 import '../index.css';
 
 export function App() {
   const handlePayment = async () => {
     try {
-      const response = await fetch('/api/payment');
-      const data = await response.json();
-      console.log('Payment response:', data);
+      const { data } = await axios.post('/api/payment');
+
+      const a = document.createElement('a');
+      a.href = data.result.checkoutUrl;
+
+      a.click();
     } catch (error) {
       console.error('Error fetching payment response:', error);
     }
