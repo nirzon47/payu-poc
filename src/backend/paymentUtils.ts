@@ -26,21 +26,22 @@ export const constructRequestBody = (paymentResponse: any) => {
 
   return {
     accountId,
-    txnId: paymentResponse._id,
+    txnId: Math.random().toString(36).substring(2, 15),
     order: {
       productInfo: 'Test',
       paymentChargeSpecification: {
-        price: paymentResponse.final_amount,
+        price: 1,
       },
     },
     billingDetails: {
       firstName: 'Test',
-      email: 'test@test.com',
+      email: '',
       phone: '9999999999',
     },
     callBackActions: {
-      successAction: 'https://merchant.com/success',
-      failureAction: 'https://merchant.com/failure',
+      successAction: 'https://google.com/success',
+      failureAction: 'https://google.com/failure',
+      cancelAction: 'https://google.com/cancel',
     },
     additionalInfo: {
       txnFlow: 'nonseamless',
