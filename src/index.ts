@@ -6,44 +6,30 @@ import {
   constructAuthHeaders,
   constructRequestBody,
 } from './backend/paymentUtils';
-import axios from 'axios';
 
 const hono = new Hono().basePath('/api');
 
-const port = Number(process.env.PORT ?? 3000);
-
-const server = serve({
-  port,
-  routes: {
-    '/*': index,
-    '/api/*': hono.fetch.bind(hono),
-  },
-
-  development: process.env.NODE_ENV !== 'production' && {
-    hmr: true,
-  },
-});
+const port = Number(process.env.PORT || 8080);
 
 hono.post('/payment', async (c) => {
   try {
     const body = constructRequestBody(paymentResponse);
     const { date, authorization } = await constructAuthHeaders(body);
 
-    const { data } = await axios.post(
-      'https://apitest.payu.in/v2/payments',
-      body,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          date: date,
-          authorization: authorization,
-        },
-      }
-    );
+    const res = await fetch('https://apitest.payu.in/v2/payments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        date,
+        authorization,
+      },
+      body: JSON.stringify(body),
+    });
 
+    const data = await res.json();
     return c.json(data);
   } catch (error) {
-    console.error('🚀 ~ error:', error);
+    console.error(error);
     return c.json({ error: 'Error processing payment' }, 500);
   }
 });
@@ -60,4 +46,12 @@ hono.post('/payu/failure', async (c) => {
   return c.json({ status: 'failure' });
 });
 
-console.log(`🚀 Server running at ${server.url}`);
+serve({
+  port,
+  routes: {
+    '/*': index,
+    '/api/*': hono.fetch.bind(hono),
+  },
+  development:
+    process.env.NODE_ENV === 'development' ? { hmr: true } : undefined,
+});
